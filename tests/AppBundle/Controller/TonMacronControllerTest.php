@@ -37,6 +37,8 @@ class TonMacronControllerTest extends SqliteWebTestCase
      */
     public function testInviteAction()
     {
+        $this->assertCount(0, $this->emailRepository->findAll());
+
         $invitation = new InvitationProcessor();
 
         $crawler = $this->client->request(Request::METHOD_GET, self::INVITATION_PATH);
@@ -125,20 +127,14 @@ class TonMacronControllerTest extends SqliteWebTestCase
             'ton_macron_invitation[messageSubject]' => $invitation->messageSubject = 'Toujours envie de voter blanc ?',
             'ton_macron_invitation[selfFirstName]' => $invitation->selfFirstName = 'Marie',
             'ton_macron_invitation[selfLastName]' => $invitation->selfLastName = 'Dupont',
-            'ton_macron_invitation[selfEmail]' => $invitation->selfEmail = 'marie.dupont@example.com',
-            'ton_macron_invitation[friendEmail]' => $invitation->friendEmail = 'beatrice@example.com',
+            'ton_macron_invitation[selfEmail]' => $invitation->selfEmail = 'marie.dupont@example.org',
+            'ton_macron_invitation[friendEmail]' => $invitation->friendEmail = 'beatrice@example.org',
         ]));
 
-        $invitation->marking = InvitationProcessor::STATE_SENT;
-
-        $this->assertSame($invitation->messageSubject, $this->getCurrentInvitation()->messageSubject);
-        $this->assertSame($invitation->selfFirstName, $this->getCurrentInvitation()->selfFirstName);
-        $this->assertSame($invitation->selfLastName, $this->getCurrentInvitation()->selfLastName);
-        $this->assertSame($invitation->selfEmail, $this->getCurrentInvitation()->selfEmail);
-        $this->assertSame($invitation->friendEmail, $this->getCurrentInvitation()->friendEmail);
-        $this->assertSame($invitation->marking, $this->getCurrentInvitation()->marking);
         $this->assertResponseStatusCode(Response::HTTP_FOUND, $this->client->getResponse());
         $this->assertClientIsRedirectedTo(self::INVITATION_SENT_PATH, $this->client);
+        $this->assertNull($this->client->getRequest()->getSession()->get(InvitationProcessorHandler::SESSION_KEY));
+        $this->assertCount(1, $this->emailRepository->findAll());
     }
 
     protected function setUp()
