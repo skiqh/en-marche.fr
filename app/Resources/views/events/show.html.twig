@@ -104,7 +104,9 @@
                 <li class="text--bold">À propos</li>
                 {% if event.active %}
                     <li>
-                        <a href="mailto:?subject=Rejoins cet événement En Marche !&amp;body=Je vais participer à l'événement {{ event.name }} ({{ event_url }}), rejoins moi !">Inviter des amis</a>
+                        <a href="{{ path('app_event_invite', {'uuid': event.uuid, 'slug': event.slug}) }}">
+                            Inviter des amis
+                        </a>
                     </li>
                 {% endif %}
                 <li>
